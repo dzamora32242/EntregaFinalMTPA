@@ -7,7 +7,7 @@ public class GetChannelsReq extends Mensaje {
   }
 
   @Override
-  public String toEncodedString() {
+  public String trasnformacionString() {
     return "GET_CHANNELS_REQ";
   }
 }

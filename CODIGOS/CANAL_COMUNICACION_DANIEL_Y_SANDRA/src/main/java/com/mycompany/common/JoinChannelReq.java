@@ -14,7 +14,7 @@ public class JoinChannelReq extends Mensaje {
   }
 
   @Override
-  public String toEncodedString() {
+  public String trasnformacionString() {
     return "JOIN_CHANNEL_REQ|" + nombreSalon;
   }
 }

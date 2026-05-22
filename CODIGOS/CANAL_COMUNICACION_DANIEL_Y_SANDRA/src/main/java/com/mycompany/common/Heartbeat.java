@@ -7,7 +7,7 @@ public class Heartbeat extends Mensaje {
     }
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "HEARTBEAT";
     }
 }

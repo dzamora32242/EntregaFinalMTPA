@@ -26,7 +26,7 @@ public class SendPrivNotification extends Mensaje {
     }
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "SEND_PRIV_NOTIFICATION|" + origen + "|" + destino + "|" + contenido;
     }
 }

@@ -5,7 +5,7 @@ import java.io.OutputStream;
 
 public class EnvioReciboMensajes {
     public static void enviar(OutputStream os, Mensaje mensaje) throws Exception {
-        os.write(mensaje.toEncodedString().getBytes());
+        os.write(mensaje.trasnformacionString().getBytes());
     }
 
 
@@ -17,6 +17,6 @@ public class EnvioReciboMensajes {
         if (n < 0)
             return null;
         
-        return Mensaje.fromEncodedString(new String(buffer, 0, n));
+        return Mensaje.transformacionInstancia(new String(buffer, 0, n));
     }
 }

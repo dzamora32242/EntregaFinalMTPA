@@ -14,7 +14,7 @@ public class LogoutReq extends Mensaje {
     }
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "LOGOUT_REQ|" + nombreUsuario;
     }
 }

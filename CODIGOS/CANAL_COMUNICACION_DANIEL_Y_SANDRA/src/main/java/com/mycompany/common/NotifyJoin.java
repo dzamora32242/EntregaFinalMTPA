@@ -13,7 +13,7 @@ public class NotifyJoin extends Mensaje {
   }
 
   @Override
-  public String toEncodedString() {
+  public String trasnformacionString() {
     return "NOTIFY_JOIN|" + usuarioUnido + "|" + nombreSalon;
   }
 }

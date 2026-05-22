@@ -20,7 +20,7 @@ public class JoinChannelRes extends Mensaje {
   }
 
   @Override
-  public String toEncodedString() {
+  public String trasnformacionString() {
     return "JOIN_CHANNEL_RES|" + exito + "|" + respuesta;
   }
 }

@@ -12,9 +12,9 @@ public abstract class Mensaje {
         return tipo;
     }
 
-    public abstract String toEncodedString();
+    public abstract String trasnformacionString();
 
-    public static Mensaje fromEncodedString(String mensaje) {
+    public static Mensaje transformacionInstancia(String mensaje) {
         String[] partes = mensaje.split("\\|", -1);
         String primitiva = partes[0];
 

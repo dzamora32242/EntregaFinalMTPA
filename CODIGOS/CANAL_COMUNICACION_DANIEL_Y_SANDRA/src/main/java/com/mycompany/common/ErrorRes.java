@@ -14,7 +14,7 @@ public class ErrorRes extends Mensaje {
     }
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "ERROR_RES|" + mensaje;
     }
 }

@@ -26,7 +26,7 @@ public class SendChannelNotification extends Mensaje {
     }
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "SEND_CHANNEL_NOTIFICATION|" + usuario + "|" + destino + "|" + contenido;
     }
 }

@@ -20,7 +20,7 @@ public class RegisterRes extends Mensaje {
     }
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "REGISTER_RES|" + exito + "|" + respuesta;
     }
 }

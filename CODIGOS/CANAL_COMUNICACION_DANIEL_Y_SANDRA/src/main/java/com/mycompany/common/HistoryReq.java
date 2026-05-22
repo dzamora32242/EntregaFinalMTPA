@@ -14,7 +14,7 @@ public class HistoryReq extends Mensaje {
 
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "LOGIN_REQ|" + nombreUsuario + "|" + salon + "|" + fecha_solicitada;
     }
     

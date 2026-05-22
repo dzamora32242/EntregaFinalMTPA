@@ -20,7 +20,7 @@ public class GetChannelsRes extends Mensaje {
   }
 
   @Override
-  public String toEncodedString() {
+  public String trasnformacionString() {
     return "GET_CHANNELS_RES|" + exito + "|" + respuesta;
   }
 }

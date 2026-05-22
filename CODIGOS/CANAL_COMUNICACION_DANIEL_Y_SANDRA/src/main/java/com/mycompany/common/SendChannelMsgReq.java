@@ -26,7 +26,7 @@ public class SendChannelMsgReq extends Mensaje {
     }
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "SEND_CHANNEL_MSG_REQ|" + destino + "|" + contenido + "|" + esUnSalon;
     }
 }

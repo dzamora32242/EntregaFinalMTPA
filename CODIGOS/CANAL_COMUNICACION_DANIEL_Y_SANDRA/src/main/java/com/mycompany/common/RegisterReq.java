@@ -14,7 +14,7 @@ public class RegisterReq extends Mensaje {
     }
 
     @Override
-    public String toEncodedString() {
+    public String trasnformacionString() {
         return "REGISTER_REQ|" + nombreUsuarioSolicitado;
     }
 }
