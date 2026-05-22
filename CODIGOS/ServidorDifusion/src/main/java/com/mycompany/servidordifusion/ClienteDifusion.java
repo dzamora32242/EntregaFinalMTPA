@@ -74,6 +74,10 @@ public class ClienteDifusion extends Thread {
             case JOIN_CHANNEL_REQ:
                 procesarUnirCanal((JoinChannelReq) msg);
 
+            case LEAVE_CHANNEL_REQ:
+                procesarLeaveChannel((LeaveChannelReq) msg);
+                break;
+
             default:
                 EnvioReciboMensajes.enviar(os, new ErrorRes("Primitiva desconocida"));
         }
@@ -110,6 +114,15 @@ public class ClienteDifusion extends Thread {
                 new JoinChannelRes(true, "Te has unido correctamente al salón"));
 
         ServidorDifusion.difusionMensaje(new NotifyJoin(username, nombreSalon));
+    }
+
+    private void procesarLeaveChannel(LeaveChannelReq req) throws Exception {
+        if (username == null) {
+            EnvioReciboMensajes.enviar(os, new LeaveChannelRes(false, "Debe iniciar sesión"));
+            return;
+        }
+        System.out.println("Usuario " + username + " sale del salón: " + req.getSalon());
+        EnvioReciboMensajes.enviar(os, new LeaveChannelRes(true, "Has salido del salón correctamente"));
     }
 
     private void procesarObtenerCanales(GetChannelsReq msg) throws Exception {
