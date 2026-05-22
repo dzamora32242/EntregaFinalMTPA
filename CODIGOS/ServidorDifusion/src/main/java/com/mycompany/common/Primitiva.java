@@ -19,5 +19,7 @@ public enum Primitiva {
   LOGOUT_RES,
   HEARTBEAT,
   HEARTBEAT_ACK,
+  HISTORY_REQ,
+  HISTORY_RES,
   ERROR_RES
 }

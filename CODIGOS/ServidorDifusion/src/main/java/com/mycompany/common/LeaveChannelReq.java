@@ -17,4 +17,9 @@ public class LeaveChannelReq extends Mensaje {
     public String getSalon() {
         return salon;
     }
+
+    @Override
+    public String toEncodedString() { 
+        return "LOGIN_RES|" + nombreUsuario + "|" + salon;
+    }
 }

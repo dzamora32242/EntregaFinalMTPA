@@ -17,4 +17,9 @@ public class LeaveChannelRes extends Mensaje {
     public String getMensaje() {
         return mensaje;
     }
+
+    @Override
+    public String toEncodedString() {
+        return "LOGIN_RES|" + ok + "|" + mensaje ;
+    }
 }
