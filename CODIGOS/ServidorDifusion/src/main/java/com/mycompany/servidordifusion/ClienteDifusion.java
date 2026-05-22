@@ -70,9 +70,11 @@ public class ClienteDifusion extends Thread {
 
             case GET_CHANNELS_REQ:
                 procesarObtenerCanales((GetChannelsReq) msg);
+                break;
 
             case JOIN_CHANNEL_REQ:
                 procesarUnirCanal((JoinChannelReq) msg);
+                break;
 
             case LEAVE_CHANNEL_REQ:
                 procesarLeaveChannel((LeaveChannelReq) msg);
@@ -121,6 +123,12 @@ public class ClienteDifusion extends Thread {
             EnvioReciboMensajes.enviar(os, new LeaveChannelRes(false, "Debe iniciar sesión"));
             return;
         }
+        for (Salon salon : salones) {
+            if (salon.getNombre().equals(req.getSalon())) {
+                salon.sacarCliente(cliente);
+            }
+        }
+    
         System.out.println("Usuario " + username + " sale del salón: " + req.getSalon());
         EnvioReciboMensajes.enviar(os, new LeaveChannelRes(true, "Has salido del salón correctamente"));
     }
