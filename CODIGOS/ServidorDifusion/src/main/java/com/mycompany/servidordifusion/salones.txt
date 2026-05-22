@@ -1,0 +1,11 @@
+Arraylist de Salones
+
+class Salon
+  nombre: string
+  usuariosConectados: int
+  mensajes: ArrayList<Mensaje>
+
+
+class Mensaje
+  origen: string
+  contenido: string

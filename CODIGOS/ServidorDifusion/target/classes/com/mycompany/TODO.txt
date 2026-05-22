@@ -1,0 +1,40 @@
+-> CAMBIAR EL ENVIO DE OBJETOS POR ENVIO DE FLUJO DE BYTES
+-> OJO:
+        2. Borrar al cliente "Fantasma"
+        Has cerrado el Socket (cliente.close()), lo cual está genial, pero el servidor (ServidorDifusion.java) sigue teniendo a ese cliente en su lista listaUsuarios. Si alguien envía un mensaje, el servidor intentará mandárselo a ese socket cerrado y dará error.
+
+        Paso A: Añade este método en ServidorDifusion.java (puedes ponerlo justo debajo del método difusionMensaje):
+
+        Java
+        public static void eliminarCliente(ClienteDifusion clienteDesconectado) {
+            listaUsuarios.remove(clienteDesconectado);
+        }
+        Paso B: Llama a ese método cuando el cliente muera en ClienteDifusion.java.
+        Ve al método run() de tu ClienteDifusion.java y actualiza el bloque catch para que avise al servidor de que debe borrarlo:
+
+        Java
+        @Override
+        public void run() {
+            try {
+                while (true) {
+                    Mensaje msg = EnvioReciboMensajes.recibir(ois);
+                    procesarMensaje(msg);
+                }
+            } catch (Exception ex) {
+                System.out.println("Cliente desconectado: " + username);
+                // AÑADE ESTA LÍNEA:
+                ServidorDifusion.eliminarCliente(this); 
+            }
+        }
+
+-> HEARTBEATS Y TIMEOUTS:
+        2. Añadir Timeout en el Servidor (ClienteDifusion.java):
+           - En el constructor de ClienteDifusion, añadir `cliente.setSoTimeout(15000);` para desconectar inactivos automáticamente a los 15s.
+
+        3. Envío automático de Heartbeats en el Cliente:
+           - Crear un hilo en Cliente.java que envíe un `new Heartbeat()` cada 5-10 segundos usando Thread.sleep().
+
+        4. Adaptar Cliente.java a ObjectOutputStream/ObjectInputStream:
+           - Cambiar el envío actual (flujo de bytes / String.getBytes) a envío de objetos serializados (Mensaje) para que encaje con el servidor.
+
+->
