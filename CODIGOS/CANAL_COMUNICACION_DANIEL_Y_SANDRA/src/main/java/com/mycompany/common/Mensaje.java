@@ -55,6 +55,13 @@ public abstract class Mensaje {
             case "ERROR_RES":
                 return new ErrorRes(partes[1]);
 
+            case "HISTORY_REQ":
+                return new HistoryReq(partes[1], partes[2],Long.parseLong(partes[3]));
+            
+            case "HISTORY_RES":
+                return new HistoryRes(partes[1], partes[2]);
+
+
             default:
                 throw new IllegalArgumentException("Tipo de mensaje desconocido: " + primitiva);
         }

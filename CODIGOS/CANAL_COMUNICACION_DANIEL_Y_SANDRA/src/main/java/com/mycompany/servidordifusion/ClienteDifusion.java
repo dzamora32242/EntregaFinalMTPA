@@ -80,9 +80,33 @@ public class ClienteDifusion extends Thread {
                 procesarLeaveChannel((LeaveChannelReq) msg);
                 break;
 
+            case HISTORY_REQ:
+                procesarHistory((HistoryReq) msg);
+                break;
+
+
             default:
                 EnvioReciboMensajes.enviar(os, new ErrorRes("Primitiva desconocida"));
         }
+    }
+
+    private void procesarHistory(HistoryReq msg) throws Exception {
+        if (username == null){
+            EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para consultar el historial"));
+            return;
+        }
+        String nombreSalon = msg.getSalon();
+        long fechaSolicitada = msg.getFecha_solicitada();
+
+        for (Salon salon : salones){
+            if (salon.getNombre().equals(nombreSalon)){
+                String historial = salon.obtenerHistorialDesde(fechaSolicitada);
+                EnvioReciboMensajes.enviar(os, new HistoryRes(nombreSalon, historial));
+                return;
+            }
+        }
+
+        EnvioReciboMensajes.enviar(os, new ErrorRes("No se ha encontrado ningún salon con el nombre especificado"));
     }
 
     private void procesarUnirCanal(JoinChannelReq msg) throws Exception {

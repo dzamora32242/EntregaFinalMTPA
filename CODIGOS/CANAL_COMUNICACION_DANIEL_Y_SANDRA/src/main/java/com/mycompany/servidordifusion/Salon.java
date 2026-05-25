@@ -39,4 +39,19 @@ public class Salon {
   public void sacarCliente(Socket cliente) {
     clientes.remove(cliente);
   }
+
+  public String obtenerHistorialDesde (long fecha_solicitada){
+    String historialStr = "";
+
+    for (MensajeUsuario mensaje : mensajes){
+      if (mensaje.getTiempo() >= fecha_solicitada){
+        historialStr += mensaje.getEmisor() + ": " + mensaje.getContenido() + "\n";
+      }
+      if (historialStr.isEmpty()){
+        return "No hay mensajes";
+      }
+
+    }
+    return historialStr;
+  }
 }

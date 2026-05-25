@@ -15,7 +15,7 @@ public class HistoryReq extends Mensaje {
 
     @Override
     public String trasnformacionString() {
-        return "LOGIN_REQ|" + nombreUsuario + "|" + salon + "|" + fecha_solicitada;
+        return "HISTORY_REQ|" + nombreUsuario + "|" + salon + "|" + fecha_solicitada;
     }
     
 }
