@@ -19,7 +19,7 @@ public class LeaveChannelReq extends Mensaje {
     }
 
     @Override
-    public String trasnformacionString() { 
-        return "LOGIN_RES|" + nombreUsuario + "|" + salon;
+    public String trasnformacionString() {
+        return "LEAVE_CHANNEL_REQ|" + nombreUsuario + "|" + salon;
     }
 }

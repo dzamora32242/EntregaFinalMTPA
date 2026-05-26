@@ -20,6 +20,6 @@ public class LeaveChannelRes extends Mensaje {
 
     @Override
     public String trasnformacionString() {
-        return "LOGIN_RES|" + ok + "|" + mensaje ;
+        return "LEAVE_CHANNEL_RES|" + ok + "|" + mensaje;
     }
 }

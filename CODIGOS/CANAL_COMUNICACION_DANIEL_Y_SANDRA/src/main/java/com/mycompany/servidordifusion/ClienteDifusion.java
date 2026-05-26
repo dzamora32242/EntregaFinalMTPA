@@ -34,79 +34,113 @@ public class ClienteDifusion extends Thread {
         try {
             while (true) {
                 Mensaje msg = EnvioReciboMensajes.recibir(is);
+                if (msg == null) break;
                 procesarMensaje(msg);
             }
         } catch (Exception ex) {
             System.out.println("Cliente desconectado: " + username);
         }
+        limpiarSalones();
     }
 
-    public void sendMessage(Mensaje mensaje) throws Exception {
+    private void limpiarSalones() {
+        for (Salon salon : salones) {
+            salon.sacarCliente(this);
+        }
+    }
+
+    public synchronized void sendMessage(Mensaje mensaje) throws Exception {
         EnvioReciboMensajes.enviar(os, mensaje);
     }
 
     private void procesarMensaje(Mensaje msg) throws Exception {
-
         switch (msg.getTipo()) {
             case REGISTER_REQ:
                 procesarRegistro((RegisterReq) msg);
                 break;
-
             case LOGIN_REQ:
                 procesarLogin((LoginReq) msg);
                 break;
-
             case SEND_CHANNEL_MSG_REQ:
                 procesarEnvioMensaje((SendChannelMsgReq) msg);
                 break;
-
             case LOGOUT_REQ:
                 procesarLogout((LogoutReq) msg);
                 break;
-
             case HEARTBEAT:
                 procesarHeartbeat((Heartbeat) msg);
                 break;
-
             case GET_CHANNELS_REQ:
                 procesarObtenerCanales((GetChannelsReq) msg);
                 break;
-
             case JOIN_CHANNEL_REQ:
                 procesarUnirCanal((JoinChannelReq) msg);
                 break;
-
             case LEAVE_CHANNEL_REQ:
                 procesarLeaveChannel((LeaveChannelReq) msg);
                 break;
-
             case HISTORY_REQ:
                 procesarHistory((HistoryReq) msg);
                 break;
-
-
             default:
                 EnvioReciboMensajes.enviar(os, new ErrorRes("Primitiva desconocida"));
         }
     }
 
-    private void procesarHistory(HistoryReq msg) throws Exception {
-        if (username == null){
-            EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para consultar el historial"));
-            return;
-        }
-        String nombreSalon = msg.getSalon();
-        long fechaSolicitada = msg.getFecha_solicitada();
-
-        for (Salon salon : salones){
-            if (salon.getNombre().equals(nombreSalon)){
-                String historial = salon.obtenerHistorialDesde(fechaSolicitada);
-                EnvioReciboMensajes.enviar(os, new HistoryRes(nombreSalon, historial));
+    private void procesarRegistro(RegisterReq req) throws Exception {
+        System.out.println("Registro de: " + req.getNombreUsuarioSolicitado());
+        for (Usuario u : usuarios) {
+            if (u.getUsuario().equals(req.getNombreUsuarioSolicitado())) {
+                EnvioReciboMensajes.enviar(os, new RegisterRes(false, "Usuario ya existe"));
                 return;
             }
         }
+        String contrasenaGenerada = req.getNombreUsuarioSolicitado() + (int) Math.floor(Math.random() * 10000);
+        usuarios.add(new Usuario(req.getNombreUsuarioSolicitado(), contrasenaGenerada));
+        EnvioReciboMensajes.enviar(os, new RegisterRes(true, contrasenaGenerada));
+    }
 
-        EnvioReciboMensajes.enviar(os, new ErrorRes("No se ha encontrado ningún salon con el nombre especificado"));
+    private void procesarLogin(LoginReq req) throws Exception {
+        System.out.println("Login de: " + req.getNombreUsuario());
+        for (Usuario u : usuarios) {
+            if (u.getUsuario().equals(req.getNombreUsuario()) &&
+                    u.getContrasena().equals(req.getContrasena())) {
+                this.username = req.getNombreUsuario();
+                EnvioReciboMensajes.enviar(os, new LoginRes(true, "OK"));
+                return;
+            }
+        }
+        EnvioReciboMensajes.enviar(os, new LoginRes(false, "Credenciales incorrectas"));
+    }
+
+    private void procesarLogout(LogoutReq msg) throws Exception {
+        if (username == null) {
+            EnvioReciboMensajes.enviar(os, new LogoutRes("No hay ninguna sesión iniciada"));
+            return;
+        }
+        System.out.println("Logout de: " + username);
+        username = null;
+        limpiarSalones();
+        EnvioReciboMensajes.enviar(os, new LogoutRes("OK"));
+        cliente.close();
+    }
+
+    private void procesarHeartbeat(Heartbeat msg) throws Exception {
+        System.out.println("Heartbeat de: " + username);
+        EnvioReciboMensajes.enviar(os, new HeartbeatACK());
+    }
+
+    private void procesarObtenerCanales(GetChannelsReq msg) throws Exception {
+        if (username == null) {
+            EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para consultar los canales"));
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < salones.size(); i++) {
+            sb.append(salones.get(i).getNombre());
+            if (i != salones.size() - 1) sb.append(", ");
+        }
+        EnvioReciboMensajes.enviar(os, new GetChannelsRes(true, sb.toString()));
     }
 
     private void procesarUnirCanal(JoinChannelReq msg) throws Exception {
@@ -114,32 +148,22 @@ public class ClienteDifusion extends Thread {
             EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para unirse a un salón"));
             return;
         }
-
         String nombreSalon = msg.getNombreSalon();
-
-        boolean encontrado = false;
-
         Salon salonEncontrado = null;
-
         for (Salon salon : salones) {
             if (salon.getNombre().equals(nombreSalon)) {
-                encontrado = true;
                 salonEncontrado = salon;
+                break;
             }
         }
-
-        if (!encontrado) {
-            EnvioReciboMensajes.enviar(os,
-                    new JoinChannelRes(false, "No se ha encontrado ningún salón con el nombre especificado"));
+        if (salonEncontrado == null) {
+            EnvioReciboMensajes.enviar(os, new JoinChannelRes(false, "Salón no encontrado"));
             return;
         }
-        
-        salonEncontrado.meterCliente(cliente);
-        
-        EnvioReciboMensajes.enviar(os,
-                new JoinChannelRes(true, "Te has unido correctamente al salón"));
-
-        ServidorDifusion.difusionMensaje(new NotifyJoin(username, nombreSalon));
+        salonEncontrado.meterCliente(this);
+        String historial = salonEncontrado.getHistorialReciente(50);
+        EnvioReciboMensajes.enviar(os, new JoinChannelRes(true, historial));
+        salonEncontrado.difundir(new NotifyJoin(username, nombreSalon));
     }
 
     private void procesarLeaveChannel(LeaveChannelReq req) throws Exception {
@@ -149,76 +173,13 @@ public class ClienteDifusion extends Thread {
         }
         for (Salon salon : salones) {
             if (salon.getNombre().equals(req.getSalon())) {
-                salon.sacarCliente(cliente);
-            }
-        }
-    
-        System.out.println("Usuario " + username + " sale del salón: " + req.getSalon());
-        EnvioReciboMensajes.enviar(os, new LeaveChannelRes(true, "Has salido del salón correctamente"));
-    }
-
-    private void procesarObtenerCanales(GetChannelsReq msg) throws Exception {
-        if (username == null) {
-            EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para consultar los canales que hay"));
-            return;
-        }
-
-        String respuesta = "";
-
-        for (int i = 0; i < salones.size(); i++) {
-            respuesta += salones.get(i).getNombre();
-            if (i != salones.size() - 1) {
-                respuesta += ", ";
-            }
-        }
-
-        EnvioReciboMensajes.enviar(os, new GetChannelsRes(true, respuesta));
-    }
-
-    private void procesarHeartbeat(Heartbeat msg) throws Exception {
-        System.out.println("Heartbeat de: " + username);
-        EnvioReciboMensajes.enviar(os, new HeartbeatACK());
-    }
-
-    private void procesarLogout(LogoutReq msg) throws Exception {
-        if (username == null) {
-            EnvioReciboMensajes.enviar(os, new LogoutRes("No hay ninguna sesión iniciada"));
-            return;
-        }
-
-        username = null;
-        EnvioReciboMensajes.enviar(os, new LogoutRes("OK"));
-        System.out.println("Logout de: " + msg.getNombreUsuario());
-        cliente.close();
-    }
-
-    private void procesarRegistro(RegisterReq req) throws Exception {
-        System.out.println("Registro de: " + req.getNombreUsuarioSolicitado());
-
-        for (Usuario u : usuarios) {
-            if (u.getUsuario().equals(req.getNombreUsuarioSolicitado())) {
-                EnvioReciboMensajes.enviar(os, new RegisterRes(false, "Usuario ya existe"));
+                salon.sacarCliente(this);
+                System.out.println("Usuario " + username + " sale del salón: " + req.getSalon());
+                EnvioReciboMensajes.enviar(os, new LeaveChannelRes(true, "Has salido del salón correctamente"));
                 return;
             }
         }
-
-        String contrasenaGenerada = req.getNombreUsuarioSolicitado() + Math.floor(Math.random() * 10000);
-
-        Usuario nuevoUsuario = new Usuario(req.getNombreUsuarioSolicitado(), contrasenaGenerada);
-
-        usuarios.add(nuevoUsuario);
-        EnvioReciboMensajes.enviar(os, new RegisterRes(true, "Registro exitoso, contraseña generada: " + contrasenaGenerada));
-    }
-
-    private void procesarLogin(LoginReq req) throws Exception {
-        System.out.println("Login de: " + req.getNombreUsuario());
-
-        if (req.getNombreUsuario() != null && req.getContrasena().equals("1234")) {
-            this.username = req.getNombreUsuario();
-            EnvioReciboMensajes.enviar(os, new LoginRes(true, "OK"));
-        } else {
-            EnvioReciboMensajes.enviar(os, new LoginRes(false, "Credenciales incorrectas"));
-        }
+        EnvioReciboMensajes.enviar(os, new LeaveChannelRes(false, "Salón no encontrado"));
     }
 
     private void procesarEnvioMensaje(SendChannelMsgReq req) throws Exception {
@@ -226,25 +187,43 @@ public class ClienteDifusion extends Thread {
             EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para enviar mensajes"));
             return;
         }
-
         if (req.getEsUnSalon()) {
-            // Envío a canal, se difunde a todos los clientes
-            ServidorDifusion.difusionMensaje(new SendChannelNotification(username, req.getDestino(), req.getContenido()));
-        } else { //MENSAJE PRIVADO SANDRA
-            String destino = req.getDestino();
-            boolean encontrado = false;
-
-            for (ClienteDifusion cliente : ServidorDifusion.getListaUsuarios()) {
-                if (cliente.getUsername() != null && cliente.getUsername().equals(destino)) {
-                    cliente.sendMessage(new SendPrivNotification(username, destino, req.getContenido()));
-                    encontrado = true;
-                    break;
+            for (Salon salon : salones) {
+                if (salon.getNombre().equals(req.getDestino())) {
+                    if (!salon.esMiembro(this)) {
+                        EnvioReciboMensajes.enviar(os, new ErrorRes("No perteneces al salón " + req.getDestino()));
+                        return;
+                    }
+                    salon.addMensaje(new MensajeUsuario(username, req.getContenido()));
+                    salon.difundir(new SendChannelNotification(username, req.getDestino(), req.getContenido()));
+                    return;
                 }
             }
+            EnvioReciboMensajes.enviar(os, new ErrorRes("Salón no encontrado"));
+        } else {
+            String destino = req.getDestino();
+            for (ClienteDifusion c : ServidorDifusion.getListaUsuarios()) {
+                if (c.getUsername() != null && c.getUsername().equals(destino)) {
+                    c.sendMessage(new SendPrivNotification(username, destino, req.getContenido()));
+                    return;
+                }
+            }
+            EnvioReciboMensajes.enviar(os, new ErrorRes("Usuario destino no conectado"));
+        }
+    }
 
-            if (!encontrado) {
-                EnvioReciboMensajes.enviar(os, new ErrorRes("Usuario destino no conectado"));
+    private void procesarHistory(HistoryReq msg) throws Exception {
+        if (username == null) {
+            EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para consultar el historial"));
+            return;
+        }
+        for (Salon salon : salones) {
+            if (salon.getNombre().equals(msg.getSalon())) {
+                String historial = salon.obtenerHistorialDesde(msg.getFecha_solicitada());
+                EnvioReciboMensajes.enviar(os, new HistoryRes(msg.getSalon(), historial));
+                return;
             }
         }
+        EnvioReciboMensajes.enviar(os, new ErrorRes("Salón no encontrado"));
     }
 }
