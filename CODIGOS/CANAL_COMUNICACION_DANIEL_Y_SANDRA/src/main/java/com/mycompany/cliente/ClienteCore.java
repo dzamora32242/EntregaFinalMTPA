@@ -18,7 +18,7 @@ public class ClienteCore {
     private String pendingUsername;
     private boolean conectado;
     private Timer heartbeatTimer;
-
+    
     public ClienteCore(String host, int puerto) throws Exception {
         socket = new Socket(host, puerto);
         is = socket.getInputStream();

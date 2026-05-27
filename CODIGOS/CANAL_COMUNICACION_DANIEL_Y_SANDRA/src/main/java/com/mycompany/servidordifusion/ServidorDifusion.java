@@ -19,9 +19,11 @@ public class ServidorDifusion implements Runnable {
 
     public ServidorDifusion() throws Exception {
         servidor = new ServerSocket(5665);
-        salones.add(new Salon("general"));
-        salones.add(new Salon("random"));
-        salones.add(new Salon("tecnologia"));
+        salones.add(new Salon("IA"));
+        salones.add(new Salon("Deportes"));
+        salones.add(new Salon("Therian"));
+        salones.add(new Salon("Manga"));
+        salones.add(new Salon("UEMC")); 
         t = new Thread(this);
         t.start();
     }
