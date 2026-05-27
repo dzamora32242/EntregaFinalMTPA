@@ -20,6 +20,14 @@ public class Salon {
         return nombre;
     }
 
+    public int getNumeroUsuarios() {
+        return clientes.size();
+    }
+
+    public int getNumeroMensajes() {
+        return mensajes.size();
+    }
+
     public ArrayList<MensajeUsuario> getMensajes() {
         return mensajes;
     }

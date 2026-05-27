@@ -2,6 +2,7 @@ package com.mycompany.servidordifusion;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -54,6 +55,7 @@ public class ClienteDifusion extends Thread {
     }
 
     private void procesarMensaje(Mensaje msg) throws Exception {
+        System.out.println("Mensaje recibido: " + msg.getTipo());
         switch (msg.getTipo()) {
             case REGISTER_REQ:
                 procesarRegistro((RegisterReq) msg);
@@ -87,6 +89,22 @@ public class ClienteDifusion extends Thread {
         }
     }
 
+    public void guardarUsuarios() {
+        try {
+            PrintWriter pw = new PrintWriter("usuarios.txt");
+
+            for (Usuario u : usuarios) {
+                pw.println(u.getUsuario() + "," + u.getContrasena());
+            }
+
+            pw.close();
+            System.out.println("Usuarios guardados correctamente");
+
+        } catch (Exception e) {
+            System.out.println("Error al guardar usuarios");
+        }
+    }
+
     private void procesarRegistro(RegisterReq req) throws Exception {
         System.out.println("Registro de: " + req.getNombreUsuarioSolicitado());
         for (Usuario u : usuarios) {
@@ -97,19 +115,24 @@ public class ClienteDifusion extends Thread {
         }
         String contrasenaGenerada = req.getNombreUsuarioSolicitado() + (int) Math.floor(Math.random() * 10000);
         usuarios.add(new Usuario(req.getNombreUsuarioSolicitado(), contrasenaGenerada));
-        EnvioReciboMensajes.enviar(os, new RegisterRes(true, contrasenaGenerada));
+        
+        guardarUsuarios();
+        
+        EnvioReciboMensajes.enviar(os, new RegisterRes(true,"Registro exitoso, contraseña generada: " + contrasenaGenerada));
     }
 
     private void procesarLogin(LoginReq req) throws Exception {
-        System.out.println("Login de: " + req.getNombreUsuario());
+        System.out.println("Intento de login: " + req.getNombreUsuario());
         for (Usuario u : usuarios) {
             if (u.getUsuario().equals(req.getNombreUsuario()) &&
                     u.getContrasena().equals(req.getContrasena())) {
                 this.username = req.getNombreUsuario();
                 EnvioReciboMensajes.enviar(os, new LoginRes(true, "OK"));
+                System.out.println("Login correcto: " + username);
                 return;
             }
         }
+        System.out.println("Login fallido: " + req.getNombreUsuario());
         EnvioReciboMensajes.enviar(os, new LoginRes(false, "Credenciales incorrectas"));
     }
 
@@ -164,6 +187,8 @@ public class ClienteDifusion extends Thread {
         String historial = salonEncontrado.getHistorialReciente(50);
         EnvioReciboMensajes.enviar(os, new JoinChannelRes(true, historial));
         salonEncontrado.difundir(new NotifyJoin(username, nombreSalon));
+
+        System.out.println("Usuario " + username + " entra en el salón: " + nombreSalon);
     }
 
     private void procesarLeaveChannel(LeaveChannelReq req) throws Exception {
@@ -187,7 +212,15 @@ public class ClienteDifusion extends Thread {
             EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para enviar mensajes"));
             return;
         }
+
+        if (req.getContenido().length() > 190) {
+            EnvioReciboMensajes.enviar(os, new ErrorRes("El mensaje supera los 190 caracteres"));
+            return;
+        }
+        System.out.println("Mensaje de " + username + " hacia " + req.getDestino());
+        System.out.println("Contenido: " + req.getContenido());
         if (req.getEsUnSalon()) {
+            System.out.println("Mensaje a salón: " + req.getDestino());
             for (Salon salon : salones) {
                 if (salon.getNombre().equals(req.getDestino())) {
                     if (!salon.esMiembro(this)) {
@@ -199,8 +232,10 @@ public class ClienteDifusion extends Thread {
                     return;
                 }
             }
+            System.out.println("Error: salón no encontrado");
             EnvioReciboMensajes.enviar(os, new ErrorRes("Salón no encontrado"));
         } else {
+            System.out.println("Mensaje privado de " + username + " a " + req.getDestino());
             String destino = req.getDestino();
             for (ClienteDifusion c : ServidorDifusion.getListaUsuarios()) {
                 if (c.getUsername() != null && c.getUsername().equals(destino)) {
@@ -208,11 +243,13 @@ public class ClienteDifusion extends Thread {
                     return;
                 }
             }
+            System.out.println("Error: usuario destino no conectado");
             EnvioReciboMensajes.enviar(os, new ErrorRes("Usuario destino no conectado"));
         }
     }
 
     private void procesarHistory(HistoryReq msg) throws Exception {
+        System.out.println("Historial solicitado por " + username + " del salón " + msg.getSalon());
         if (username == null) {
             EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para consultar el historial"));
             return;
