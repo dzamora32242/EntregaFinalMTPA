@@ -1,6 +1,6 @@
 package com.mycompany.cliente;
 
-public interface MensajeListener {
+public interface InterfazGrafica {
     void onRegistro(boolean exito, String respuesta);
     void onLogin(boolean exito, String respuesta);
     void onLogout(String respuesta);

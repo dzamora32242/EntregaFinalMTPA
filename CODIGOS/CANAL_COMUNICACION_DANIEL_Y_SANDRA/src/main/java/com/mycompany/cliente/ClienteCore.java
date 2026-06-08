@@ -13,7 +13,7 @@ public class ClienteCore {
     private Socket socket;
     private InputStream is;
     private OutputStream os;
-    private MensajeListener listener;
+    private InterfazGrafica listener;
     private String username;
     private String pendingUsername;
     private boolean conectado;
@@ -28,7 +28,7 @@ public class ClienteCore {
         iniciarHeartbeat();
     }
 
-    public void setListener(MensajeListener listener) {
+    public void setListener(InterfazGrafica listener) {
         this.listener = listener;
     }
 
@@ -41,10 +41,10 @@ public class ClienteCore {
     }
 
     /**
-     * Envía un mensaje al servidor de forma sincronizada a través del socket.
+     * Envía un mensaje al servidor de forma sincronizada a través del socket
      * 
-     * @param msg El mensaje que se va a enviar.
-     * @throws Exception Si ocurre un error durante el envío por la red.
+     * @param msg El mensaje que se va a enviar
+     * @throws Exception Si ocurre un error durante el envío por la red
      */
     private synchronized void enviar(Mensaje msg) {
         try {
@@ -56,9 +56,9 @@ public class ClienteCore {
     }
 
     /**
-     * Inicia un hilo en segundo plano (daemon) encargado de escuchar continuamente
-     * los mensajes entrantes del servidor mientras la conexión esté activa.
-     * Si se pierde la conexión, notifica al listener y detiene el heartbeat.
+     * Inicia un hilo en segundo plano encargado de escuchar continuamente
+     * los mensajes entrantes del servidor mientras la conexión esté activa
+     * Si se pierde la conexión, notifica al listener y detiene el heartbeat
      */
     private void iniciarReceptor() {
         Thread t = new Thread(() -> {
@@ -81,8 +81,8 @@ public class ClienteCore {
     }
 
     /**
-     * Inicia un temporizador que envía periódicamente un mensaje de latido (Heartbeat)
-     * al servidor para mantener la conexión viva y evitar desconexiones por inactividad.
+     * Inicia un temporizador que envía periódicamente un mensaje de Heartbeat
+     * al servidor para mantener la conexión viva y evitar desconexiones por inactividad
      */
     private void iniciarHeartbeat() {
         heartbeatTimer = new Timer(true);
@@ -101,9 +101,9 @@ public class ClienteCore {
 
     /**
      * Recibe un mensaje emitido por el servidor y determina qué evento del 
-     * listener debe ser disparado según el tipo de primitiva del mensaje.
+     * listener debe disparar según el tipo de primitiva del mensaje
      * 
-     * @param msg El mensaje recibido desde el servidor a procesar.
+     * @param msg El mensaje recibido desde el servidor a procesar
      */
     private void procesarMensaje(Mensaje msg) {
         if (listener == null) return;
@@ -180,22 +180,22 @@ public class ClienteCore {
     }
 
     /**
-     * Envía al servidor una solicitud para registrar un nuevo nombre de usuario.
+     * Envía al servidor una solicitud para registrar un nuevo nombre de usuario
      * 
-     * @param nombre El nombre del usuario que se desea registrar.
-     * @throws Exception Si ocurre un error de red al enviar la solicitud.
+     * @param nombre El nombre del usuario que se desea registrar
+     * @throws Exception Si ocurre un error de red al enviar la solicitud
      */
     public void registrar(String nombre) throws Exception {
         enviar(new RegisterReq(nombre));
     }
 
     /**
-     * Envía una petición al servidor para iniciar sesión con las credenciales proporcionadas.
-     * Guarda el nombre de usuario de forma temporal hasta confirmar el éxito del login.
+     * Envía una petición al servidor para iniciar sesión con las credenciales proporcionadas
+     * Guarda el nombre de usuario de forma temporal hasta confirmar el éxito del login
      * 
-     * @param nombre El nombre de usuario.
-     * @param contrasena La contraseña asociada a la cuenta.
-     * @throws Exception Si hay algún problema enviando la petición.
+     * @param nombre El nombre de usuario
+     * @param contrasena La contraseña asociada a la cuenta
+     * @throws Exception Si hay algún problema enviando la petición
      */
     public void login(String nombre, String contrasena) throws Exception {
         pendingUsername = nombre;
@@ -203,79 +203,79 @@ public class ClienteCore {
     }
 
     /**
-     * Envía al servidor una petición para cerrar la sesión activa del usuario actual.
+     * Envía al servidor una petición para cerrar la sesión activa del usuario actual
      * 
-     * @throws Exception Si hay algún fallo durante la comunicación con el servidor.
-     */
+     * @throws Exception Si hay algún fallo durante la comunicación con el servidor
+    */
     public void logout() throws Exception {
         enviar(new LogoutReq(username != null ? username : ""));
     }
 
     /**
-     * Solicita al servidor la lista de todos los salones de chat disponibles actualmente.
+     * Solicita al servidor la lista de todos los salones de chat disponibles actualmente
      * 
-     * @throws Exception Si ocurre un error en la transmisión de la solicitud.
+     * @throws Exception Si ocurre un error en la transmisión de la solicitud
      */
     public void getCanales() throws Exception {
         enviar(new GetChannelsReq());
     }
 
     /**
-     * Envía una petición para unirse a un salón de chat específico.
+     * Envía una petición para unirse a un salón de chat específico
      * 
-     * @param salon El nombre del canal al que el usuario quiere entrar.
-     * @throws Exception Si hay algún error en el envío.
+     * @param salon El nombre del canal al que el usuario quiere entrar
+     * @throws Exception Si hay algún error en el envío
      */
     public void unirCanal(String salon) throws Exception {
         enviar(new JoinChannelReq(salon));
     }
 
     /**
-     * Notifica al servidor la intención de abandonar un salón de chat en el que se encuentra.
+     * Notifica al servidor la intención de abandonar un salón de chat en el que se encuentra
      * 
-     * @param salon El nombre del salón que se va a dejar.
-     * @throws Exception Si ocurre un error al enviar la petición.
+     * @param salon El nombre del salón que se va a dejar
+     * @throws Exception Si ocurre un error al enviar la petición
      */
     public void salirCanal(String salon) throws Exception {
         enviar(new LeaveChannelReq(username != null ? username : "", salon));
     }
 
     /**
-     * Envía un mensaje de texto público dirigido a todos los miembros de un salón de chat.
+     * Envía un mensaje de texto público dirigido a todos los miembros de un salón de chat
      * 
-     * @param salon El nombre del salón de chat destino.
-     * @param texto El contenido del mensaje a enviar.
-     * @throws Exception Si se produce un error durante el envío.
+     * @param salon El nombre del salón de chat destino
+     * @param texto El contenido del mensaje a enviar
+     * @throws Exception Si se produce un error durante el envío
      */
     public void enviarMensajeCanal(String salon, String texto) throws Exception {
         enviar(new SendChannelMsgReq(salon, texto, true));
     }
 
     /**
-     * Envía un mensaje de texto privado dirigido exclusivamente a otro usuario conectado.
+     * Envía un mensaje de texto privado dirigido exclusivamente a otro usuario conectado
      * 
-     * @param destino El nombre del usuario que recibirá el mensaje privado.
+     * @param destino El nombre del usuario que recibirá el mensaje privado
      * @param texto El contenido del mensaje.
-     * @throws Exception Si ocurre un problema en la transmisión de datos.
+     * @throws Exception Si ocurre un problema en la transmisión de datos
      */
     public void enviarMensajePrivado(String destino, String texto) throws Exception {
         enviar(new SendChannelMsgReq(destino, texto, false));
     }
 
     /**
-     * Solicita al servidor el historial de mensajes de un salón determinado, a partir de una fecha concreta.
+     * Solicita al servidor el historial de mensajes de un salón desde una fecha 
      * 
-     * @param salon El nombre del salón del cual se requiere el historial.
-     * @param desdeTimestamp El momento de tiempo (en milisegundos) desde el que se solicitan los mensajes.
-     * @throws Exception Si falla la comunicación de red.
+     * @param salon El nombre del salón del cual se requiere el historial
+     * @param desdeTimestamp El momento de tiempo (en milisegundos) desde el que se solicitan los mensajes
+     * @throws Exception Si falla la comunicación de red
      */
     public void pedirHistorial(String salon, long desdeTimestamp) throws Exception {
         enviar(new HistoryReq(username != null ? username : "", salon, desdeTimestamp));
     }
 
     /**
-     * Cierra de forma controlada la conexión de red con el servidor, 
-     * detiene el envío periódico de latidos (heartbeat) y actualiza el estado local del cliente.
+     * Cierra la conexión de red con el servidor,
+     * deteniendo el envío periódico de heartbeats y actualiza el estado del cliente
      */
     public void desconectar() {
         conectado = false;

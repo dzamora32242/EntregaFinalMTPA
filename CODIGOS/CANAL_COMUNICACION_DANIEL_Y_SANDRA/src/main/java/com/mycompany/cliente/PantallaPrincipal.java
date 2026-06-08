@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 
-public class PantallaPrincipal extends JFrame implements ActionListener, MensajeListener {
+public class PantallaPrincipal extends JFrame implements ActionListener, InterfazGrafica {
 
     private ClienteCore core;
     private String miUsuario;
@@ -83,7 +83,7 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
 
     /**
      * Cambia la conexión del usuario del salón actual al nuevo salón especificado.
-     * Se encarga de abandonar el canal previo (si existía) y enviar la petición de unión al nuevo.
+     * Se encarga de abandonar el canal previo y enviar la petición de unión al nuevo.
      * 
      * @param nuevoSalon El nombre del salón al que el usuario desea unirse.
      */
@@ -152,17 +152,17 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
                     JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, 
                     null, opciones, opciones[0]);
 
-                long timestamp = 0; 
+                long lapsoTiempo = 0; 
                 
                 if (seleccion == 1) {
-                    timestamp = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000); 
+                    lapsoTiempo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000); 
                 } else if (seleccion == 2) { 
-                    timestamp = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000); 
+                    lapsoTiempo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000); 
                 }
 
                 if (seleccion >= 0) {
                     areaChat.append(">> Solicitando mensajes anteriores al servidor...\n");
-                    core.pedirHistorial(salonActivo, timestamp);
+                    core.pedirHistorial(salonActivo, lapsoTiempo);
                 }
 
             } else if (e.getSource() == btnLogout) {

@@ -14,8 +14,7 @@ public abstract class Mensaje {
 
     /**
      * Transforma la instancia actual del mensaje en una cadena de texto (String) formateada.
-     * Los diferentes atributos del mensaje se concatenan utilizando el carácter '|' como delimitador,
-     * lo que permite su correcta serialización para el envío a través de sockets.
+     * Será implementada por cada una de las primitivas segun sus datos pertinentes
      * 
      * @return Una cadena de texto que representa el mensaje serializado.
      */
@@ -23,9 +22,9 @@ public abstract class Mensaje {
 
     /**
      * Reconstruye y devuelve un objeto de tipo Mensaje (o una de sus subclases) a partir de 
-     * una cadena de texto recibida por la red. Este método actúa como un factory o deserializador, 
+     * una cadena de texto recibida por la red. Este método actúa como deserializador, 
      * analizando la primera parte de la cadena para identificar el tipo de primitiva y 
-     * utilizando el resto de partes para inicializar las propiedades específicas del mensaje.
+     * el resto como partes para los atributos de la clase de la primitiva como tal
      * 
      * @param mensaje La cadena de texto recibida que contiene la información del mensaje y sus parámetros separados por '|'.
      * @return Una instancia concreta correspondiente a una de las clases derivadas de Mensaje.

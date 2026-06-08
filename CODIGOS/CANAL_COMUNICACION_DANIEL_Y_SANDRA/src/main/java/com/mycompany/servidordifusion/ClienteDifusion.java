@@ -36,10 +36,6 @@ public class ClienteDifusion extends Thread {
         this.mensajeriaActiva = mensajeriaActiva;
     }
 
-    /**
-     * Bucle principal del hilo, se encarga de escuchar y procesar los mensajes entrantes del cliente.
-     * Termina cuando el cliente se desconecta.
-     */
     @Override
     public void run() {
         try {
@@ -133,6 +129,10 @@ public class ClienteDifusion extends Thread {
         }
     }
 
+    /**
+     * Guarda la lista actual de mensajes mandados a cada salon en el archivo "mensajes.txt".
+     * Cada línea del archivo contiene toda la informacion del mensaje separados por una coma.
+     */
     public void guardarMensajes() {
         try {
             PrintWriter pw = new PrintWriter("mensajes.txt");
@@ -153,7 +153,7 @@ public class ClienteDifusion extends Thread {
 
     /**
      * Procesa una solicitud de registro de un nuevo usuario.
-     * Verifica si el usuario ya existe, si no, lo crea con una contraseña generada y lo guarda.
+     * Verifica si el usuario ya existe, si no exisite, lo crea con una contraseña generada y lo guarda.
      * @param req La solicitud de registro.
      * @throws Exception si ocurre un error durante el envío de la respuesta.
      */

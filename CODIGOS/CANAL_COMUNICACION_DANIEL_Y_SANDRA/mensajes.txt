@@ -1,2 +1,1 @@
-1780931886000,IA,daniel,hola este es un mensaje de prueba
-1780932589091,IA,daniel,esto es un nuevo mensaje para guardarse en el txt
+

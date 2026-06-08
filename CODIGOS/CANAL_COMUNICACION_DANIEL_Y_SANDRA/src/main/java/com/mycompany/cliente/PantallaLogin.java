@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class PantallaLogin extends JFrame implements ActionListener, MensajeListener {
+public class PantallaLogin extends JFrame implements ActionListener, InterfazGrafica {
 
     private JTextField txtUsuario;
     private JTextField txtContrasena;
@@ -47,10 +47,10 @@ public class PantallaLogin extends JFrame implements ActionListener, MensajeList
     }
 
     /**
-     * Maneja los eventos de los botones de la interfaz gráfica (Iniciar Sesión y Registrarse).
-     * Lee los campos de texto y delega la acción correspondiente al objeto nucleo de conexión.
+     * Maneja los eventos de Iniciar Sesión y Registrarse
+     * Lee los campos de texto y delega la acción pertinente
      * 
-     * @param e El evento de acción generado por la interacción del usuario con los botones.
+     * @param e Evento de acción generado por la interacción del usuario con los botones.
      */
     @Override
     public void actionPerformed(ActionEvent e) {

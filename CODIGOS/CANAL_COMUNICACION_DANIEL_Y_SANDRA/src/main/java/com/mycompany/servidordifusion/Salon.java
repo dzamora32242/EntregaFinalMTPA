@@ -101,7 +101,7 @@ public class Salon {
      * Sirve para proporcionar contexto inicial a los usuarios que acaban de unirse a la sala.
      * 
      * @param limite El número máximo de mensajes recientes que se desea recuperar.
-     * @return Una cadena de texto con el historial reciente formateado, o "Sin mensajes" si está vacío.
+     * @return Una cadena de texto con el historial reciente o "Sin mensajes" si está vacío.
      */
     public String getHistorialReciente(int limite) {
         int inicio = Math.max(0, mensajes.size() - limite);
@@ -116,8 +116,8 @@ public class Salon {
     /**
      * Obtiene todos los mensajes del salón que hayan sido enviados a partir de una fecha determinada.
      * 
-     * @param fecha_solicitada El limite de tiempo (en milisegundos) desde el cual se quieren solicitar los mensajes.
-     * @return Una cadena de texto con los mensajes filtrados por fecha, o "No hay mensajes" si no hay resultados.
+     * @param fecha_solicitada El limite de tiempo desde el cual se quieren solicitar los mensajes.
+     * @return Una cadena de texto con los mensajes o "No hay mensajes" si no hay resultados.
      */
     public String obtenerHistorialDesde(long fecha_solicitada) {
         StringBuilder sb = new StringBuilder();

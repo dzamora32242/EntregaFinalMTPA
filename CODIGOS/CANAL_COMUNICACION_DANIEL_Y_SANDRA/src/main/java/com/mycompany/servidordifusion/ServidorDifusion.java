@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import com.mycompany.common.Mensaje;
 
 public class ServidorDifusion implements Runnable {
     private ServerSocket servidor;
@@ -151,7 +150,9 @@ public void menuServidor() {
         }
     }
 
-
+    /**
+     * Lee el archivo "mensajes.txt" para inicializar el historial de mensajes anteriores al reinicio del servidor
+     */
     public void cargarMensajes() {
         try {
             BufferedReader br = new BufferedReader(new FileReader("mensajes.txt"));
