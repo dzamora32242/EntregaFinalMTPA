@@ -24,7 +24,6 @@ public class PantallaChatPrivado extends JFrame implements ActionListener {
 
         setTitle("Privado con: " + usuarioDestino);
         setSize(400, 320);
-        // DISPOSE_ON_CLOSE asegura que solo se cierre esta ventana, no el programa
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -45,7 +44,6 @@ public class PantallaChatPrivado extends JFrame implements ActionListener {
 
         areaPrivada.append("Charla privada con " + usuarioDestino + "...\n");
 
-        // Cuando la cierras, borra su contenido
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -54,6 +52,13 @@ public class PantallaChatPrivado extends JFrame implements ActionListener {
         });
     }
 
+    /**
+     * Captura y procesa los eventos de la interfaz, específicamente el envío de mensajes.
+     * Toma el texto introducido por el usuario y utiliza el cliente core para enviarlo 
+     * como un mensaje privado al destinatario, actualizando el historial local del chat.
+     * 
+     * @param e El evento de acción generado (por ejemplo, pulsar enter o hacer clic en el botón de enviar).
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
@@ -68,6 +73,13 @@ public class PantallaChatPrivado extends JFrame implements ActionListener {
         }
     }
 
+    /**
+     * Muestra un mensaje entrante en el área de texto de esta ventana de chat privado.
+     * Sirve para actualizar la interfaz gráfica cuando el usuario destino responde o envía un nuevo mensaje.
+     * 
+     * @param origen El nombre del usuario que envió el mensaje.
+     * @param contenido El texto del mensaje recibido.
+     */
     public void recibirMensaje(String origen, String contenido) {
         areaPrivada.append("[" + origen + "]: " + contenido + "\n");
     }

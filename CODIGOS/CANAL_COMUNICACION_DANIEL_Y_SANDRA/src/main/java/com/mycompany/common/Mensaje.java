@@ -1,8 +1,5 @@
 package com.mycompany.common;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 public abstract class Mensaje {
 
     private Primitiva tipo;
@@ -15,8 +12,25 @@ public abstract class Mensaje {
         return tipo;
     }
 
+    /**
+     * Transforma la instancia actual del mensaje en una cadena de texto (String) formateada.
+     * Los diferentes atributos del mensaje se concatenan utilizando el carácter '|' como delimitador,
+     * lo que permite su correcta serialización para el envío a través de sockets.
+     * 
+     * @return Una cadena de texto que representa el mensaje serializado.
+     */
     public abstract String trasnformacionString();
 
+    /**
+     * Reconstruye y devuelve un objeto de tipo Mensaje (o una de sus subclases) a partir de 
+     * una cadena de texto recibida por la red. Este método actúa como un factory o deserializador, 
+     * analizando la primera parte de la cadena para identificar el tipo de primitiva y 
+     * utilizando el resto de partes para inicializar las propiedades específicas del mensaje.
+     * 
+     * @param mensaje La cadena de texto recibida que contiene la información del mensaje y sus parámetros separados por '|'.
+     * @return Una instancia concreta correspondiente a una de las clases derivadas de Mensaje.
+     * @throws IllegalArgumentException Si la primitiva extraída de la cadena no es reconocida por el sistema.
+     */
     public static Mensaje transformacionInstancia(String mensaje) {
         String[] partes = mensaje.split("\\|", -1);
         String primitiva = partes[0];

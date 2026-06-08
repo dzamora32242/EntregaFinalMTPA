@@ -1,13 +1,10 @@
 package com.mycompany.cliente;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.Scanner;
 
 
 
@@ -20,7 +17,7 @@ public class Cliente
         Cliente c = new Cliente();
         c.sck = new Socket("127.0.0.1", 5665);
         c.start();
-        //-->Sigue funcionando...
+        
         BufferedReader br = 
                 new BufferedReader(new InputStreamReader(System.in));
         while (true)
