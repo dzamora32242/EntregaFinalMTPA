@@ -32,8 +32,7 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-
-        // Norte (Botones de arriba)
+        
         JPanel panelNorte = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnPrivado = new JButton("Nuevo Mensaje Privado");
         btnHistorial = new JButton("Cargar Historial");
@@ -46,7 +45,6 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         panelNorte.add(btnLogout);
         add(panelNorte, BorderLayout.NORTH);
 
-        // Oeste (Lista de salones)
         JPanel panelOeste = new JPanel(new BorderLayout());
         panelOeste.setBorder(BorderFactory.createTitledBorder("Salones"));
         
@@ -67,13 +65,11 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         panelOeste.add(new JScrollPane(listaSalones), BorderLayout.CENTER);
         add(panelOeste, BorderLayout.WEST);
 
-        // Centro (El texto del chat)
         areaChat = new JTextArea();
         areaChat.setEditable(false);
         areaChat.setLineWrap(true);
         add(new JScrollPane(areaChat), BorderLayout.CENTER);
 
-        // Sur (Barra para escribir)
         JPanel panelSur = new JPanel(new BorderLayout());
         txtEntrada = new JTextField();
         txtEntrada.addActionListener(this); 
@@ -85,6 +81,12 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         add(panelSur, BorderLayout.SOUTH);
     }
 
+    /**
+     * Cambia la conexión del usuario del salón actual al nuevo salón especificado.
+     * Se encarga de abandonar el canal previo (si existía) y enviar la petición de unión al nuevo.
+     * 
+     * @param nuevoSalon El nombre del salón al que el usuario desea unirse.
+     */
     private void cambiarDeSalon(String nuevoSalon) {
         try {
             if (!this.salonActivo.equals("")) {
@@ -98,6 +100,12 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         }
     }
 
+    /**
+     * Maneja los eventos de interacción de la interfaz gráfica, como el envío de mensajes,
+     * la solicitud de chats privados, la carga del historial o el cierre de sesión.
+     * 
+     * @param e El evento de acción generado por los componentes de la interfaz.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
@@ -166,6 +174,13 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         }
     }
 
+    /**
+     * Procesa la respuesta del servidor al intentar unirse a un salón de chat.
+     * Muestra un mensaje de bienvenida en el área de chat si tiene éxito, o un error en caso contrario.
+     * 
+     * @param exito true si la unión al salón fue aprobada, false si fue denegada.
+     * @param respuesta El mensaje de confirmación o el motivo del error devuelto por el servidor.
+     */
     @Override
     public void onUnirCanal(boolean exito, String respuesta) {
         if (exito) {
@@ -176,6 +191,14 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         }
     }
 
+    /**
+     * Recibe un mensaje público enviado a un salón y lo muestra en el área de texto
+     * si el cliente se encuentra actualmente en dicho salón.
+     * 
+     * @param usuario El nombre del usuario que envió el mensaje.
+     * @param salon El salón de chat donde se publicó el mensaje.
+     * @param contenido El texto del mensaje.
+     */
     @Override
     public void onMensajeCanal(String usuario, String salon, String contenido) {
         if (this.salonActivo.equals(salon)) {
@@ -183,6 +206,14 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         }
     }
 
+    /**
+     * Gestiona la recepción de un mensaje privado.
+     * Crea una nueva ventana de chat privado si no existe, o actualiza la existente con el nuevo mensaje.
+     * 
+     * @param origen El nombre del usuario que envía el mensaje privado.
+     * @param destino El destinatario del mensaje (este cliente).
+     * @param contenido El texto del mensaje recibido.
+     */
     @Override
     public void onMensajePrivado(String origen, String destino, String contenido) {
 
@@ -195,6 +226,12 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         ventana.recibirMensaje(origen, contenido);
     }
 
+    /**
+     * Procesa el historial de mensajes de un salón recibido desde el servidor y lo formatea en pantalla.
+     * 
+     * @param salon El salón al que pertenece el historial devuelto.
+     * @param historial Una cadena con los mensajes concatenados devueltos por el servidor.
+     */
     @Override
     public void onHistorial(String salon, String historial) {
         if (this.salonActivo.equals(salon)) {
@@ -207,6 +244,12 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         }
     }
 
+    /**
+     * Notifica en el área de chat que un nuevo usuario se ha unido al salón actual.
+     * 
+     * @param usuario El nombre del usuario que acaba de entrar.
+     * @param salon El nombre del salón al que se ha unido.
+     */
     @Override
     public void onNotifyJoin(String usuario, String salon) {
         if (this.salonActivo.equals(salon)) {
@@ -214,18 +257,34 @@ public class PantallaPrincipal extends JFrame implements ActionListener, Mensaje
         }
     }
 
+    /**
+     * Maneja la confirmación de cierre de sesión por parte del servidor,
+     * mostrando un mensaje de despedida y finalizando la ejecución del cliente.
+     * 
+     * @param respuesta El mensaje de confirmación de cierre de sesión del servidor.
+     */
     @Override
     public void onLogout(String respuesta) {
         JOptionPane.showMessageDialog(this, "Sesión cerrada.", "Adiós", JOptionPane.INFORMATION_MESSAGE);
         System.exit(0);
     }
 
+    /**
+     * Actúa cuando se pierde de manera inesperada la conexión con el servidor.
+     * Muestra una alerta de error y cierra la aplicación de forma segura.
+     */
     @Override
     public void onDesconexion() {
         JOptionPane.showMessageDialog(this, "Conexión perdida.", "Error", JOptionPane.ERROR_MESSAGE);
         System.exit(1);
     }
 
+    /**
+     * Muestra los mensajes de error notificados por el sistema o el servidor.
+     * Utiliza la interfaz de chat privado (simulando un mensaje del sistema) para hacerlos visibles al usuario.
+     * 
+     * @param msg La descripción del error a mostrar.
+     */
     @Override 
     public void onError(String msg) { 
         onMensajePrivado("SISTEMA", miUsuario, "ERROR: " + msg);

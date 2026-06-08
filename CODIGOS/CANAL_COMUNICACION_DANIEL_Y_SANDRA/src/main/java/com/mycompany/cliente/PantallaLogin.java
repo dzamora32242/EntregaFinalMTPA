@@ -15,7 +15,7 @@ public class PantallaLogin extends JFrame implements ActionListener, MensajeList
 
     public PantallaLogin(ClienteCore core) {
         this.core = core;
-        this.core.setListener(this); // Le decimos al core que esta ventana le escucha
+        this.core.setListener(this);
 
         setTitle("Mensajería MTPA - Autenticación");
         setSize(360, 200);
@@ -46,6 +46,12 @@ public class PantallaLogin extends JFrame implements ActionListener, MensajeList
         add(panelBotones, BorderLayout.SOUTH);
     }
 
+    /**
+     * Maneja los eventos de los botones de la interfaz gráfica (Iniciar Sesión y Registrarse).
+     * Lee los campos de texto y delega la acción correspondiente al objeto nucleo de conexión.
+     * 
+     * @param e El evento de acción generado por la interacción del usuario con los botones.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         String usuario = txtUsuario.getText().trim();
@@ -75,34 +81,53 @@ public class PantallaLogin extends JFrame implements ActionListener, MensajeList
         }
     }
 
+    /**
+     * Procesa la respuesta del servidor tras una solicitud de registro.
+     * Muestra un mensaje de éxito con la contraseña asignada o un cuadro de error si falló.
+     * 
+     * @param exito true si el registro se completó correctamente, false en caso contrario.
+     * @param respuesta La contraseña generada o el mensaje de error devuelto por el servidor.
+     */
     @Override
     public void onRegistro(boolean exito, String respuesta) {
         if (exito) {
             JOptionPane.showMessageDialog(this, "Registrado. Su clave es: " + respuesta, "Registro Exitoso", JOptionPane.INFORMATION_MESSAGE);
-            txtContrasena.setText(respuesta); // Rellena la caja automáticamente
+            txtContrasena.setText(respuesta);
         } else {
             JOptionPane.showMessageDialog(this, "Error: " + respuesta, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    /**
+     * Procesa la respuesta del servidor tras un intento de inicio de sesión.
+     * Si es exitoso, cierra la ventana actual y abre la pantalla principal. En caso de error, muestra un aviso.
+     * 
+     * @param exito true si el inicio de sesión fue validado, false si hubo un error de credenciales.
+     * @param respuesta Mensaje informativo o de error devuelto por el servidor.
+     */
     @Override
     public void onLogin(boolean exito, String respuesta) {
         if (exito) {
-            // ¡MAGIA! Ocultamos el login y abrimos el entorno principal
+            
             PantallaPrincipal principal = new PantallaPrincipal(core, txtUsuario.getText().trim());
             principal.setVisible(true);
-            this.dispose(); // Destruimos la ventana de login
+            this.dispose(); 
         } else {
             JOptionPane.showMessageDialog(this, "Credenciales incorrectas: " + respuesta, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    /**
+     * Muestra un cuadro de diálogo al usuario cuando ocurre un error reportado por el servidor.
+     * 
+     * @param mensaje El texto descriptivo del error a mostrar en pantalla.
+     */
     @Override
     public void onError(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Error del Sistema", JOptionPane.ERROR_MESSAGE);
     }
 
-    // Métodos vacíos que no se usan en el Login
+   
     @Override public void onLogout(String r) {}
     @Override public void onCanales(boolean e, String r) {}
     @Override public void onUnirCanal(boolean e, String r) {}
@@ -112,6 +137,11 @@ public class PantallaLogin extends JFrame implements ActionListener, MensajeList
     @Override public void onHistorial(String s, String h) {}
     @Override public void onNotifyJoin(String u, String s) {}
     @Override public void onHeartbeatAck() {}
+
+    /**
+     * Maneja la pérdida de conexión inesperada con el servidor.
+     * Notifica al usuario mediante una alerta y finaliza la ejecución del cliente.
+     */
     @Override public void onDesconexion() {
         JOptionPane.showMessageDialog(this, "Desconectado del servidor.", "Error", JOptionPane.ERROR_MESSAGE);
         System.exit(0);

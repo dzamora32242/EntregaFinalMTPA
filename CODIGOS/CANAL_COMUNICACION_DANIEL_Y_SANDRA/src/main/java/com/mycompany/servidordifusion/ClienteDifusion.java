@@ -30,6 +30,10 @@ public class ClienteDifusion extends Thread {
         return username;
     }
 
+    /**
+     * Bucle principal del hilo, se encarga de escuchar y procesar los mensajes entrantes del cliente.
+     * Termina cuando el cliente se desconecta.
+     */
     @Override
     public void run() {
         try {
@@ -44,16 +48,30 @@ public class ClienteDifusion extends Thread {
         limpiarSalones();
     }
 
+    /**
+     * Elimina al cliente de todos los salones en los que estuviera presente.
+     * Se utiliza al cerrar la sesión o al desconectarse.
+     */
     private void limpiarSalones() {
         for (Salon salon : salones) {
             salon.sacarCliente(this);
         }
     }
 
+    /**
+     * Envía un objeto Mensaje al cliente de forma sincronizada.
+     * @param mensaje El mensaje a enviar.
+     * @throws Exception si ocurre un error durante el envío.
+     */
     public synchronized void sendMessage(Mensaje mensaje) throws Exception {
         EnvioReciboMensajes.enviar(os, mensaje);
     }
 
+    /**
+     * Procesa un mensaje entrante y lo delega al método correspondiente según su tipo.
+     * @param msg El mensaje recibido del cliente.
+     * @throws Exception si ocurre un error al procesar el mensaje.
+     */
     private void procesarMensaje(Mensaje msg) throws Exception {
         System.out.println("Mensaje recibido: " + msg.getTipo());
         switch (msg.getTipo()) {
@@ -89,6 +107,10 @@ public class ClienteDifusion extends Thread {
         }
     }
 
+    /**
+     * Guarda la lista actual de usuarios en el archivo "usuarios.txt".
+     * Cada línea del archivo contiene el nombre de usuario y la contraseña separados por una coma.
+     */
     public void guardarUsuarios() {
         try {
             PrintWriter pw = new PrintWriter("usuarios.txt");
@@ -105,6 +127,12 @@ public class ClienteDifusion extends Thread {
         }
     }
 
+    /**
+     * Procesa una solicitud de registro de un nuevo usuario.
+     * Verifica si el usuario ya existe, si no, lo crea con una contraseña generada y lo guarda.
+     * @param req La solicitud de registro.
+     * @throws Exception si ocurre un error durante el envío de la respuesta.
+     */
     private void procesarRegistro(RegisterReq req) throws Exception {
         System.out.println("Registro de: " + req.getNombreUsuarioSolicitado());
         for (Usuario u : usuarios) {
@@ -121,6 +149,12 @@ public class ClienteDifusion extends Thread {
         EnvioReciboMensajes.enviar(os, new RegisterRes(true,"Registro exitoso, contraseña generada: " + contrasenaGenerada));
     }
 
+    /**
+     * Procesa una solicitud de inicio de sesión.
+     * Verifica las credenciales del usuario y actualiza el estado del cliente si son correctas.
+     * @param req La solicitud de login.
+     * @throws Exception si ocurre un error durante el envío de la respuesta.
+     */
     private void procesarLogin(LoginReq req) throws Exception {
         System.out.println("Intento de login: " + req.getNombreUsuario());
         for (Usuario u : usuarios) {
@@ -136,6 +170,12 @@ public class ClienteDifusion extends Thread {
         EnvioReciboMensajes.enviar(os, new LoginRes(false, "Credenciales incorrectas"));
     }
 
+    /**
+     * Procesa una solicitud de cierre de sesión.
+     * Limpia el estado del usuario y cierra la conexión.
+     * @param msg La solicitud de logout.
+     * @throws Exception si ocurre un error.
+     */
     private void procesarLogout(LogoutReq msg) throws Exception {
         if (username == null) {
             EnvioReciboMensajes.enviar(os, new LogoutRes("No hay ninguna sesión iniciada"));
@@ -148,11 +188,23 @@ public class ClienteDifusion extends Thread {
         cliente.close();
     }
 
+    /**
+     * Procesa un mensaje de heartbeat para mantener la conexión activa.
+     * Responde con un HeartbeatACK.
+     * @param msg El mensaje de heartbeat.
+     * @throws Exception si ocurre un error al enviar el ACK.
+     */
     private void procesarHeartbeat(Heartbeat msg) throws Exception {
         System.out.println("Heartbeat de: " + username);
         EnvioReciboMensajes.enviar(os, new HeartbeatACK());
     }
 
+    /**
+     * Procesa una solicitud para obtener la lista de salones disponibles.
+     * Requiere que el usuario haya iniciado sesión.
+     * @param msg La solicitud para obtener canales.
+     * @throws Exception si ocurre un error al enviar la respuesta.
+     */
     private void procesarObtenerCanales(GetChannelsReq msg) throws Exception {
         if (username == null) {
             EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para consultar los canales"));
@@ -166,6 +218,12 @@ public class ClienteDifusion extends Thread {
         EnvioReciboMensajes.enviar(os, new GetChannelsRes(true, sb.toString()));
     }
 
+    /**
+     * Procesa una solicitud para unirse a un salón de chat.
+     * Añade al cliente al salón, le envía el historial reciente y notifica a los demás miembros.
+     * @param msg La solicitud para unirse al canal.
+     * @throws Exception si ocurre un error.
+     */
     private void procesarUnirCanal(JoinChannelReq msg) throws Exception {
         if (username == null) {
             EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para unirse a un salón"));
@@ -191,6 +249,11 @@ public class ClienteDifusion extends Thread {
         System.out.println("Usuario " + username + " entra en el salón: " + nombreSalon);
     }
 
+    /**
+     * Procesa una solicitud para abandonar un salón de chat.
+     * @param req La solicitud para abandonar el canal.
+     * @throws Exception si ocurre un error.
+     */
     private void procesarLeaveChannel(LeaveChannelReq req) throws Exception {
         if (username == null) {
             EnvioReciboMensajes.enviar(os, new LeaveChannelRes(false, "Debe iniciar sesión"));
@@ -207,6 +270,11 @@ public class ClienteDifusion extends Thread {
         EnvioReciboMensajes.enviar(os, new LeaveChannelRes(false, "Salón no encontrado"));
     }
 
+    /**
+     * Procesa el envío de un mensaje, ya sea a un salón o a un usuario privado.
+     * @param req La solicitud de envío de mensaje.
+     * @throws Exception si ocurre un error.
+     */
     private void procesarEnvioMensaje(SendChannelMsgReq req) throws Exception {
         if (username == null) {
             EnvioReciboMensajes.enviar(os, new ErrorRes("Debe iniciar sesión para enviar mensajes"));
@@ -248,6 +316,11 @@ public class ClienteDifusion extends Thread {
         }
     }
 
+    /**
+     * Procesa una solicitud de historial de mensajes de un salón.
+     * @param msg La solicitud de historial.
+     * @throws Exception si ocurre un error.
+     */
     private void procesarHistory(HistoryReq msg) throws Exception {
         System.out.println("Historial solicitado por " + username + " del salón " + msg.getSalon());
         if (username == null) {
