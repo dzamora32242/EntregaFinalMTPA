@@ -11,6 +11,12 @@ public class MensajeUsuario {
     tiempo = System.currentTimeMillis();
   }
 
+  public MensajeUsuario(String emisor, String contenido, long tiempo) {
+    this.emisor = emisor;
+    this.contenido = contenido;
+    this.tiempo = tiempo;
+  }
+
   public String getEmisor() {
     return emisor;
   }

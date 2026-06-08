@@ -16,7 +16,6 @@ public class ClienteGrafico {
                 
             } catch (Exception e) {
                 System.out.println("Error al arrancar el cliente gráfico: No se pudo conectar al servidor.");
-                e.printStackTrace();
             }
         });
     }

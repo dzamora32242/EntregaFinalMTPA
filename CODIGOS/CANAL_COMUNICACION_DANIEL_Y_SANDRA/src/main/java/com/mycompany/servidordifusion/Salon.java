@@ -15,6 +15,10 @@ public class Salon {
         clientes = new ArrayList<>();
     }
 
+    public void agregarMensaje(MensajeUsuario mensaje) {
+        mensajes.add(mensaje);
+    }
+
     public String getNombre() {
         return nombre;
     }

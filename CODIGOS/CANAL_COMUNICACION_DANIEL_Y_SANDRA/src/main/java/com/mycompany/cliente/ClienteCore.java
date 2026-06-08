@@ -46,8 +46,13 @@ public class ClienteCore {
      * @param msg El mensaje que se va a enviar.
      * @throws Exception Si ocurre un error durante el envío por la red.
      */
-    private synchronized void enviar(Mensaje msg) throws Exception {
-        EnvioReciboMensajes.enviar(os, msg);
+    private synchronized void enviar(Mensaje msg) {
+        try {
+            EnvioReciboMensajes.enviar(os, msg);
+        } catch (Exception e) {
+            System.out.println(
+                    "No ha sido posible enviar el mensaje, es posible que el servidor no acepte más clientes.");
+        }
     }
 
     /**

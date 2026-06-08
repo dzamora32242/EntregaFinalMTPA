@@ -16,7 +16,7 @@ public class ServidorDifusion implements Runnable {
     private ArrayList<Salon> salones = new ArrayList<>();
     private Thread t;
     private static boolean aceptarClientes = true;
-    private static boolean mensajeriaActiva = true;
+    private static Boolean mensajeriaActiva = true;
 
     public static ArrayList<ClienteDifusion> getListaUsuarios() {
         return listaUsuarios;
@@ -30,6 +30,7 @@ public class ServidorDifusion implements Runnable {
         salones.add(new Salon("Therian"));
         salones.add(new Salon("Manga"));
         salones.add(new Salon("UEMC")); 
+        cargarMensajes();
         menuServidor();
         t = new Thread(this);
         t.start();
@@ -62,13 +63,22 @@ public void menuServidor() {
 
             switch (opcion) {
                 case 1:
-                    aceptarClientes = false;
-                    System.out.println("No se aceptarán más clientes");
+                    aceptarClientes = !aceptarClientes;
+                    if (aceptarClientes) {
+                        System.out.println("Vuelven a aceptarse más clientes");
+                    } else {
+                        System.out.println("No se aceptarán más clientes");
+                    }
                     break;
 
                 case 2:
                     mensajeriaActiva = !mensajeriaActiva;
                     System.out.println("Mensajería ahora: " + mensajeriaActiva);
+
+                    for (ClienteDifusion cliente : listaUsuarios) {
+                        cliente.setMensajeriaActiva(mensajeriaActiva);
+                    }
+
                     break;
 
                 case 3:
@@ -89,35 +99,17 @@ public void menuServidor() {
     public void escuchaUsuarios() throws Exception {
         while (true) {
             System.out.println("Esperando clientes....");
+            Socket sck = servidor.accept();
+
             if (!aceptarClientes) {
                 System.out.println("No se aceptan nuevos clientes");
+                sck.close();
                 continue;
             }
-            Socket sck = servidor.accept();
-            System.out.println("Un cliente conectado...");
-            ClienteDifusion unCliente = new ClienteDifusion(sck, usuarios, salones);
-            listaUsuarios.add(unCliente);
-        }
-    }
 
-    /**
-     * Envía un mensaje a todos los clientes que están actualmente conectados al servidor.
-     * La difusión masiva solo se realiza si el administrador mantiene la mensajería activa.
-     * 
-     * @param mensaje El objeto Mensaje que se va a enviar a toda la red.
-     */
-    public static void difusionMensaje(Mensaje mensaje) {
-        if (!mensajeriaActiva) {
-            System.out.println("Mensajería desactivada");
-        return;
-        }
-        System.out.println("Difundiendo mensaje a todos los clientes");
-        for (ClienteDifusion unCliente : new ArrayList<>(listaUsuarios)) {
-            try {
-                unCliente.sendMessage(mensaje);
-            } catch (Exception e) {
-                System.out.println("Error difusión: " + e.toString());
-            }
+            System.out.println("Un cliente conectado...");
+            ClienteDifusion unCliente = new ClienteDifusion(sck, usuarios, salones, mensajeriaActiva);
+            listaUsuarios.add(unCliente);
         }
     }
 
@@ -159,4 +151,35 @@ public void menuServidor() {
         }
     }
 
+
+    public void cargarMensajes() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("mensajes.txt"));
+
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(",");
+                Salon salonEcontrado = null;
+
+                for (Salon salon : salones) {
+                    if (salon.getNombre().equals(partes[1])) {
+                        salonEcontrado = salon;
+                        break;
+                    }
+                }
+
+                if (salonEcontrado != null) {
+                    salonEcontrado.agregarMensaje(new MensajeUsuario(partes[2], partes[3], Long.parseLong(partes[0])));
+                }
+            }
+
+
+
+            br.close();
+            System.out.println("Mensajes cargados");
+
+        } catch (Exception e) {
+            System.out.println("No hay archivo de usuarios aún");
+        }
+    }
 }

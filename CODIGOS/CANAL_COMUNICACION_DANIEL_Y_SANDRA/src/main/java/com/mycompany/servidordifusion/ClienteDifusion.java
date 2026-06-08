@@ -16,18 +16,24 @@ public class ClienteDifusion extends Thread {
     private String username = null;
     private ArrayList<Usuario> usuarios;
     private ArrayList<Salon> salones;
+    private boolean mensajeriaActiva;
 
-    public ClienteDifusion(Socket sck, ArrayList<Usuario> usuarios, ArrayList<Salon> salones) throws Exception {
+    public ClienteDifusion(Socket sck, ArrayList<Usuario> usuarios, ArrayList<Salon> salones, boolean mensajeriaActiva) throws Exception {
         cliente = sck;
         os = cliente.getOutputStream();
         is = cliente.getInputStream();
         this.usuarios = usuarios;
         this.salones = salones;
+        this.mensajeriaActiva = mensajeriaActiva;
         start();
     }
 
     public String getUsername() {
         return username;
+    }
+
+    public void setMensajeriaActiva(boolean mensajeriaActiva) {
+        this.mensajeriaActiva = mensajeriaActiva;
     }
 
     /**
@@ -124,6 +130,24 @@ public class ClienteDifusion extends Thread {
 
         } catch (Exception e) {
             System.out.println("Error al guardar usuarios");
+        }
+    }
+
+    public void guardarMensajes() {
+        try {
+            PrintWriter pw = new PrintWriter("mensajes.txt");
+
+            for (Salon salon : salones) {
+                for (MensajeUsuario mensaje : salon.getMensajes()) {
+                    pw.println(mensaje.getTiempo() + "," + salon.getNombre() + "," + mensaje.getEmisor() + "," + mensaje.getContenido());
+                }
+            }
+
+            pw.close();
+            System.out.println("Mensajes guardados correctamente");
+
+        } catch (Exception e) {
+            System.out.println("Error al guardar mensajes");
         }
     }
 
@@ -285,6 +309,12 @@ public class ClienteDifusion extends Thread {
             EnvioReciboMensajes.enviar(os, new ErrorRes("El mensaje supera los 190 caracteres"));
             return;
         }
+
+        if (!mensajeriaActiva) {
+            EnvioReciboMensajes.enviar(os, new ErrorRes("La mensajeria está desactivada."));
+            return;
+        }
+
         System.out.println("Mensaje de " + username + " hacia " + req.getDestino());
         System.out.println("Contenido: " + req.getContenido());
         if (req.getEsUnSalon()) {
@@ -297,6 +327,7 @@ public class ClienteDifusion extends Thread {
                     }
                     salon.addMensaje(new MensajeUsuario(username, req.getContenido()));
                     salon.difundir(new SendChannelNotification(username, req.getDestino(), req.getContenido()));
+                    guardarMensajes();
                     return;
                 }
             }
@@ -308,6 +339,7 @@ public class ClienteDifusion extends Thread {
             for (ClienteDifusion c : ServidorDifusion.getListaUsuarios()) {
                 if (c.getUsername() != null && c.getUsername().equals(destino)) {
                     c.sendMessage(new SendPrivNotification(username, destino, req.getContenido()));
+                    guardarMensajes();
                     return;
                 }
             }
